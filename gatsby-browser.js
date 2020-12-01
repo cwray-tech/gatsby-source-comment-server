@@ -1,84 +1,81 @@
 require("./styles.css");
 
-function createElement(name, className, html = null) {
-  const element = document.createElement(name);
-  element.className = className;
-  element.innerHTML = html;
-  return element;
-}
+// Creates element, set class, innerhtml then returns it;
+const createEl = (name, className, html = null) => {
+  const el = document.createElement(name);
+  el.className = className;
+  el.innerHTML = html;
+  return el;
+};
 
-const getCommentsForPage = async (slug) => {
-  const path = slug
-    .split("/")
-    .filter((s) => s)
-    .join("/");
+// Sets the class and text of the form feedback
+const updateFeedback = (str = "", className) => {
+  const feedback = document.querySelector(".feedback");
+  feedback.className = `feedback ${className ? className : ""}`.trim();
+  feedback.innerHTML = str;
+  return feedback;
+};
 
-  const comments = await fetch(`/comments/${path}.json`);
-  return comments.json();
+const createHTMLForm = () => {
+  const form = createEl("form");
+  form.className = "comment-form";
+  const nameInput = createEl("input", "name-input", null);
+  nameInput.type = "text";
+  nameInput.placeholder = "Your Name";
+  form.appendChild(nameInput);
+  const commentInput = createEl("textarea", "comment-input", null);
+  commentInput.placeholder = "Comment";
+  form.appendChild(commentInput);
+  const feedback = createEl("span", "feedback");
+  form.appendChild(feedback);
+  const button = createEl("button", "comment-btn", "Submit");
+  button.type = "submit";
+  form.appendChild(button);
+  return form;
 };
 
 const getCommentListItem = (comment) => {
-  const li = createElement("li");
+  const li = createEl("li");
   li.className = "comment-list-item";
 
-  const nameCont = createElement("div");
-  const name = createElement("strong", "comment-author", comment.name);
-  const date = createElement(
+  const nameCont = createEl("div");
+  const name = createEl("strong", "comment-author", comment.name);
+  const date = createEl(
     "span",
     "comment-date",
     new Date(comment.createdAt).toLocaleDateString()
   );
-
+  // date.className="date"
   nameCont.append(name);
   nameCont.append(date);
 
-  const commentCont = createElement("div", "comment-cont", comment.content);
+  const commentCont = createEl("div", "comment-cont", comment.content);
 
   li.append(nameCont);
   li.append(commentCont);
   return li;
 };
 
-const createCommentForm = () => {
-  const form = createElement("form");
-  form.className = "comment-form";
-  const nameInput = createElement("input", "name-input", null);
-  nameInput.type = text;
-  nameInput.placehoder = "Your Name";
-  form.appendChild(nameInput);
-
-  const commentInput = createElement("textarea", "comment-input", null);
-  commentInput.placehoder = "Comment";
-  form.appendChild(commentInput);
-
-  const feedback = createElement("span", "feedback");
-  form.appendChild(feedback);
-
-  const button = createElement("button", "comment-btn", "Submit");
-  button.type = "Submit";
-  form.appendChild(button);
-
-  return form;
-};
-
-const updateFeedback = (message = "", className) => {
-  const feedback = document.querySelector(".feedback");
-  feedback.className = `feedback ${className ? className : ""}`.trim();
-  feedback.innerHTML = message;
-
-  return feedback;
+const getCommentsForPage = async (slug) => {
+  const path = slug
+    .split("/")
+    .filter((s) => s)
+    .join("/");
+  const data = await fetch(`/comments/${path}.json`);
+  return data.json();
 };
 
 exports.onRouteUpdate = async ({ location, prevLocation }, pluginOptions) => {
   const commentContainer = document.getElementById("commentContainer");
+  const commentForm = document.getElementById("body .comment-form");
   if (commentContainer && location.path !== "/") {
-    const header = createElement("h2");
+    const header = createEl("h2");
     header.innerHTML = "Comments";
     commentContainer.appendChild(header);
-
-    const commentListUl = createElement("ul");
+    const commentListUl = createEl("ul");
     commentListUl.className = "comment-list";
     commentContainer.appendChild(commentListUl);
+    commentContainer.appendChild(createHTMLForm(commentForm));
 
     const comments = await getCommentsForPage(location.pathname);
 
@@ -90,49 +87,41 @@ exports.onRouteUpdate = async ({ location, prevLocation }, pluginOptions) => {
       });
     }
 
-    commentContainer.appendChild(createCommentForm);
-  }
-
-  document
-    .querySelector("body .comment-form")
-    .addEventListener("submit", async function (event) {
-      event.preventDefault();
-      updateFeedback();
-      const name = document.querySelector(".name-input").value;
-      const comment = document.querySelector(".comment-input").value;
-
-      if (!name) {
-        return updateFeedback("Name is required");
-      }
-      if (!comment) {
-        return updateFeedback("Comment is required");
-      }
-      updateFeedback("Saving comment...", "info");
-
-      const button = document.querySelector(".comment-btn");
-      button.disabled = true;
-
-      const commentData = {
-        name,
-        content: comment,
-        slug: location.pathname,
-        website: pluginOptions.website,
-      };
-
-      fetch(
-        "https://cors-anywhere.herokuapp.com/gatsbyjs-comment-server.herokuapp.com/comments",
-        {
-          body: JSON.stringify(commentData),
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
+    document.addEventListener("submit", function (event) {
+      if (event.target && event.target.className === "comment-form") {
+        event.preventDefault();
+        updateFeedback();
+        const name = document.querySelector(".name-input").value;
+        const comment = document.querySelector(".comment-input").value;
+        if (!name) {
+          return updateFeedback("Name is required");
         }
-      )
-        .then(async function (result) {
+        if (!comment) {
+          return updateFeedback("Comment is required");
+        }
+        updateFeedback("Saving comment", "info");
+        const btn = document.querySelector(".comment-btn");
+        btn.disabled = true;
+        const data = {
+          name,
+          content: comment,
+          slug: location.pathname,
+          website: pluginOptions.website,
+        };
+
+        fetch(
+          "https://cors-anywhere.herokuapp.com/gatsbyjs-comment-server.herokuapp.com/comments",
+          {
+            body: JSON.stringify(data),
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        ).then(async function (result) {
           const json = await result.json();
-          button.disabled = false;
+          btn.disabled = false;
 
           if (!result.ok) {
             updateFeedback(json.error.msg, "error");
@@ -141,10 +130,8 @@ exports.onRouteUpdate = async ({ location, prevLocation }, pluginOptions) => {
             document.querySelector(".comment-input").value = "";
             updateFeedback("Comment has been saved!", "success");
           }
-        })
-        .catch(async (error) => {
-          const errorText = await error.text();
-          updateFeedback(errorText, "error");
         });
+      }
     });
+  }
 };

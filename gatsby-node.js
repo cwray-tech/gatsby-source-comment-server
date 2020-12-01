@@ -3,30 +3,31 @@ const fs = require("fs");
 const pathResolve = require("path").resolve;
 
 exports.sourceNodes = async (
-  { actions, createNode, createContentDigest },
+  { actions, createNodeId, createContentDigest },
   pluginOptions
 ) => {
   const { createTypes } = actions;
   const typeDefs = `
-  type CommentServer implements Node {
-    _id: String
-    author: String
-    string: String
-    content: String
-    website: String
-    slug: String
-    createdAt: Date
-    updatedAt: Date
-  }
+    type CommentServer implements Node {
+      _id: String
+      name: String
+      string: String
+      website: String
+      content: String
+      slug: String
+      createdAt: Date
+      updatedAt: Date
+    }
   `;
   createTypes(typeDefs);
 
+  const { createNode } = actions;
   const { limit, website } = pluginOptions;
-  const _limit = parseInt(limit || 10000);
+  const _limit = parseInt(limit || 10000); // FETCH ALL COMMENTS
   const _website = website || "";
 
   const result = await axios({
-    url: `https://Gatsbyjs-comment-server.herokuapp.com/comments?limit=${_limit}&website=${_website}`,
+    url: `https://gatsbyjs-comment-server.herokuapp.com/comments?website=${_website}`,
   });
 
   const comments = result.data;
