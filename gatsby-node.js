@@ -1,14 +1,16 @@
-/**
- * Implement Gatsby's Node APIs in this file.
- *
- * See: https://www.gatsbyjs.com/docs/node-apis/
- */
-// You can delete this file if you're not using it
-
-/**
- * You can uncomment the following line to verify that
- * your plugin is being loaded in your site.
- *
- * See: https://www.gatsbyjs.com/docs/creating-a-local-plugin/#developing-a-local-plugin-that-is-outside-your-project
- */
-exports.onPreInit = () => console.log("Loaded gatsby-starter-plugin")
+exports.sourceNodes = async ({ actions }) => {
+  const { createTypes } = actions;
+  const typeDefs = `
+  type CommentServer implements Node {
+    _id: String
+    author: String
+    string: String
+    content: String
+    website: String
+    slug: String
+    createdAt: Date
+    updatedAt: Date
+  }
+  `;
+  createTypes(typeDefs);
+};
