@@ -1,12 +1,16 @@
 {
   "name": "gatsby-source-comments",
-  "version": "1.0.0",
+  "main": "index.js",
   "description": "A way to store and retrieve comments on your Gatsby website.",
   "keywords": [
     "gatsby",
     "gatsby-plugin"
   ],
   "author": "Chris Wray <chris@solmediaco.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cwray-tech/gatsby-source-comments"
+  },
   "license": "0BSD",
   "dependencies": {
     "axios": "^0.21.0"
