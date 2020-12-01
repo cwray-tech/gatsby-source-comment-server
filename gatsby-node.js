@@ -21,7 +21,6 @@ exports.sourceNodes = async (
   `;
   createTypes(typeDefs);
 
-  const { createNode } = actions;
   const { limit, website } = pluginOptions;
   const _limit = parseInt(limit || 10000);
   const _website = website || "";
