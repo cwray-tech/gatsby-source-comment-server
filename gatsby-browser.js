@@ -1,4 +1,4 @@
-import "./styles.css";
+require("./styles.css");
 
 function createElement(name, className, html = null) {
   const element = document.createElement(name);

@@ -1,8 +1,11 @@
 const axios = require("axios");
-import fs from "fs"
-import {resolve: pathResolve} from "path"
+const fs = require("fs");
+const pathResolve = require("path").resolve;
 
-exports.sourceNodes = async ({ actions }) => {
+exports.sourceNodes = async (
+  { actions, createNode, createContentDigest },
+  pluginOptions
+) => {
   const { createTypes } = actions;
   const typeDefs = `
   type CommentServer implements Node {
@@ -20,6 +23,7 @@ exports.sourceNodes = async ({ actions }) => {
 
   const { createNode } = actions;
   const { limit, website } = pluginOptions;
+  const _limit = parseInt(limit || 10000);
   const _website = website || "";
 
   const result = await axios({
@@ -75,8 +79,6 @@ exports.createResolvers = ({ createResolvers }) => {
   createResolvers(resolvers);
 };
 
-
-
 exports.createPagesStatefully = async ({ graphql }) => {
   const comments = await graphql(
     `
@@ -94,10 +96,10 @@ exports.createPagesStatefully = async ({ graphql }) => {
         }
       }
     `
-  )
+  );
 
   if (comments.errors) {
-    throw comments.errors
+    throw comments.errors;
   }
 
   const markdownPosts = await graphql(
@@ -117,36 +119,36 @@ exports.createPagesStatefully = async ({ graphql }) => {
         }
       }
     `
-  )
+  );
 
-  const posts = markdownPosts.data.allMarkdownRemark.edges
-  const _comments = comments.data.allCommentServer.edges
+  const posts = markdownPosts.data.allMarkdownRemark.edges;
+  const _comments = comments.data.allCommentServer.edges;
 
-  const commentsPublicPath = pathResolve(process.cwd(), "public/comments")
+  const commentsPublicPath = pathResolve(process.cwd(), "public/comments");
 
-  var exists = fs.existsSync(commentsPublicPath) //create destination directory if it doesn't exist
+  var exists = fs.existsSync(commentsPublicPath); //create destination directory if it doesn't exist
 
   if (!exists) {
-    fs.mkdirSync(commentsPublicPath)
+    fs.mkdirSync(commentsPublicPath);
   }
 
   posts.forEach((post, index) => {
-    const path = post.node.fields.slug
+    const path = post.node.fields.slug;
     const commentsForPost = _comments
-      .filter(comment => {
-        return comment.node.slug === path
+      .filter((comment) => {
+        return comment.node.slug === path;
       })
-      .map(comment => comment.node)
+      .map((comment) => comment.node);
 
     const strippedPath = path
       .split("/")
-      .filter(s => s)
-      .join("/")
+      .filter((s) => s)
+      .join("/");
     const _commentPath = pathResolve(
       process.cwd(),
       "public/comments",
       `${strippedPath}.json`
-    )
-    fs.writeFileSync(_commentPath, JSON.stringify(commentsForPost))
-  })
-}
+    );
+    fs.writeFileSync(_commentPath, JSON.stringify(commentsForPost));
+  });
+};
