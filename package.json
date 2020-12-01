@@ -1,5 +1,5 @@
 {
-  "name": "gatsby-source-comment-server",
+  "name": "gatsby-source-comments",
   "version": "1.0.0",
   "description": "A way to store and retrieve comments on your Gatsby website.",
   "main": "index.js",
