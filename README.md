@@ -17,7 +17,17 @@ This is a plugin for Gatsby that makes it easy to add comments to posts in your 
 3. CD into your site directory, and use the npm link command to link the plugin to your Gatsby node modules.
 
 ```bash
-npm link ../path/to/plugin
+# First cd to the package folder.
+cd gatsby-source-comments
+
+# Then run the npm or yarn link command.
+npm link
+
+# Go to your Gatsby website directory.
+cd your-website
+
+# Finally, run the npm or yarn link command to connect the local plugin folder to your website.
+npm link "gatsby-source-comments"
 ```
 
 4. Then add the plugin configuration to your gatsby.config.js file.
